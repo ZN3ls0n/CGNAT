@@ -49,9 +49,10 @@ Simplified application of CGNAT
       <li>One access switch</li>
       <li>One access router (default gateway)</li>
     </ul>
+
 ## IP Addressing Scheme
 <ul>
- <li><b>NOTE:</b>LAN Routers have been configured as DHCP server to provide endpoints in the LANs with IP addresses. </li>
+ <li><b>NOTE: </b>LAN Routers have been configured as DHCP server to provide endpoints in the LANs with IP addresses. To see how to configure DHCP on a router (Router-on-a-stick configuration), see this <a href="https://nodeconnect.blogspot.com/2025/04/how-to-set-up-cisco-router-as-dhcp.html">post</a> </li>
 </ul>
   
 <ul>
