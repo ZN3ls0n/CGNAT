@@ -52,16 +52,57 @@ Simplified application of CGNAT
 
 ## IP Addressing Scheme
 <ul>
- <li><b>NOTE: </b>LAN Routers have been configured as DHCP server to provide endpoints in the LANs with IP addresses. To see how to configure DHCP on a router (Router-on-a-stick configuration), see this <a href="https://nodeconnect.blogspot.com/2025/04/how-to-set-up-cisco-router-as-dhcp.html">post</a> </li>
+ <li><b>NOTE: </b>LAN Routers have been configured as DHCP server to provide endpoints in the LANs with IP addresses. For a walkthrough on configuring DHCP on a Cisco router, see this <a href="https://nodeconnect.blogspot.com/2025/04/how-to-set-up-cisco-router-as-dhcp.html">post</a>. </li>
+ <li>If you choose static configurations, ensure each PC is configured with: </li>
+  <ul>
+    <li>Valid IP address and subnet mask</li>
+    <li>Router default gateway for LAN traffic</li>
+  </ul>
 </ul>
-  
-<ul>
-  <li>Choose a subnet for your LANs</li>
-  <li>Give each device an IP address and establish your default gateway</li>
-  **NOTE** LAN Routers used DHCP. You can also statically configure your IPs for PCs. Ensure it is in the same subnet as your configured default gateway. 
-  <li>Verify IP connectivity</li>
-</ul>
+
 <b>Troubleshooting</b>
 <ul>
-  <li></li>
+  <li>Verify ports are enabled and links are correct</li>
+  <li>Verify each PC has the correct IP address, subnet mask, and default gateway</li>
+  <li>Ping the default gateway or another PC in the subnet to verify connectivity</li>
+</ul>
+</ul>
+
+## CGNAT Design
+<p>Once LAN configuration is verified, traffic can be routed to the CGNAT gateway. At this point, traffic has only reached the default gateway. Outgoing traffic will have a private source IP address, which will need to be translated to access public-facing resources.</p>
+<ul>
+  <li>Each customer router has a point-to-point link with the CGNAT gateway.</li>
+    <ul>
+      <li>Customer 1 CGNAT Link: 100.64.10.0/30</li>
+        <ul>
+          <li>100.64.10.1 - Customer Router</li>
+          <li>100.64.10.2 - CGNAT Gateway</li>
+        </ul>
+      <li>Customer 2 CGNAT Link: 100.64.10.4/30</li>
+      <ul>
+        <li>100.64.10.5 – Customer Router</li>
+        <li>100.64.10.6 – CGNAT Gateway</li>
+      </ul>
+    </ul>
+</ul>
+  <p>These subnets represent traffic from the customer side toward the CGNAT gateway. In many home network deployments, customers do not have a dedicated public IP connection to their ISP. ISPs use the shared space within the 100.64.0.0/10 reserved address space for CGNAT. To preserve space for other customers, the point-to-point links use a /30 subnet. LAN traffic from each customer router is forwarded over its designated CGNAT link.  </p>
+  
+<p>This is where the NAT process begins. At this stage, the CGNAT router is configured to translate private customer traffic into public IP addresses before routing it to the ISP. Customer traffic is then trunked over the ISP link. Traffic is differentiated using random ephemeral port numbers, a form of port address translation (PAT).</p>
+
+
+## CGNAT Configuration
+**NOTE** This topology uses static routing only. No dynamic routing protocols are configured.
+
+Routing configurations will be different depending on the router's position:
+<ul>
+  <li>Customer routers require a default route to reach the CGNAT gateway and the Internet. </li>
+  <li>The CGNAT gateway requires routes back to the customers and a default route to the Internet.</li>
+  <li>The ISP router represents a provider's network, including autonomous systems and protocols used to route traffic across the Internet.</li>
+</ul>
+
+### Customer Router Configuration
+Each customer router uses a default route pointing to its directly connected CGNAT gateway interface
+<ul>
+<li>Customer 1 Router <code>ip route 0.0.0.0 0.0.0.0 100.64.10.2</code></li>
+<li>Customer 2 Router <code>ip route 0.0.0.0 0.0.0.0 100.64.10.6</code></li>
 </ul>
