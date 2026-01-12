@@ -106,3 +106,6 @@ Each customer router uses a default route pointing to its directly connected CGN
 <li>Customer 1 Router <code>ip route 0.0.0.0 0.0.0.0 100.64.10.2</code></li>
 <li>Customer 2 Router <code>ip route 0.0.0.0 0.0.0.0 100.64.10.6</code></li>
 </ul>
+
+### CGNAT Gateway Configuration
+The CGNAT gateway handles the inside and outside NAT configuration. The inside NAT will translate subscriber data into 
