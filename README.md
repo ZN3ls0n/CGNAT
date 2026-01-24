@@ -35,7 +35,6 @@ Simplified application of CGNAT
 </ul>
 
 # Demo Steps
-1. Create your Customer LANs
 ## LAN Design
 <ul>
   <li>2 Customer Subnets</li>
@@ -101,11 +100,56 @@ Routing configurations will be different depending on the router's position:
 </ul>
 
 ### Customer Router Configuration
-Each customer router uses a default route pointing to its directly connected CGNAT gateway interface
+Each customer router uses a default route pointing to its directly connected CGNAT gateway interface. Before it reaches the CGNAT gateway, the customer router will NAT the internal LAN addresses to a non-private, dedicated subnet range for CGNAT: 100.64.10.0/30. <b>This is to show why CGNAT disrupts many services. It requires explicitly saying which inbound traffic it will accept. On a ISP level, that is not only out of our hands but up to the ISP to manage those connections. Workarounds include port forwarding, a public IP address, or a dual stack configuration. </b>
 <ul>
-<li>Customer 1 Router <code>ip route 0.0.0.0 0.0.0.0 100.64.10.2</code></li>
-<li>Customer 2 Router <code>ip route 0.0.0.0 0.0.0.0 100.64.10.6</code></li>
+<li>Customer 1 Router:
+  <pre><code>
+    conf t
+    int g0/0
+    ip nat inside # LAN traffic
+    int g0/1
+    ip nat outside # LAN -> CGNAT traffic
+    exit
+    access-list 1 permit 192.168.10.0 0.0.0.255
+    ip nat inside source list 1 int g0/1 overload
+    ip route 0.0.0.0 0.0.0.0 100.64.10.2
+    exit</code></pre>
+</li>
+<li>Customer 2 Router: 
+  <pre><code>
+    conf t
+    int g0/0
+    ip nat inside # LAN traffic
+    int g0/1
+    ip nat outside # LAN -> CGNAT traffic
+    exit
+    access-list 2 permit 192.168.20.0 0.0.0.255
+    ip nat inside source list 2 int g0/1 overload
+    ip route 0.0.0.0 0.0.0.0 100.64.10.6
+    exit</code></pre>
 </ul>
 
 ### CGNAT Gateway Configuration
-The CGNAT gateway handles the inside and outside NAT configuration. The inside NAT will translate subscriber data into 
+The CGNAT gateway handles the inside and outside NAT configuration. The inside NAT will translate the CGNAT traffic to a public address, which will be routed through the ISP before it reaches the Internet. The customer-facing interfaces will have inside configurations and the ISP-facing interface will have outside configurations. 
+
+<pre><code>
+  conf t
+  int g0/0/0
+  ip nat inside
+  exit
+  int g0/0/1
+  ip nat inside
+  exit
+  int g0/0/2
+  ip nat outside
+  exit
+  ip nat inside source list 1 int g0/0/2 overload
+  access-list 1 permit 100.64.10.0 0.0.0.7 # This line will allow for the subnets to send and receive traffic. 
+
+  # Static routes for traffic
+  ip route 192.168.10.0 255.255.255.0 100.64.10.1
+  ip route 192.168.20.0 255.255.255.0 100.64.10.5
+  ip route 0.0.0.0 0.0.0.0 203.0.113.2
+
+  exit
+</code></pre>
