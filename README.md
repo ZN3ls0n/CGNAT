@@ -144,7 +144,7 @@ The CGNAT gateway handles the inside and outside NAT configuration. The inside N
   ip nat outside
   exit
   ip nat inside source list 1 int g0/0/2 overload
-  access-list 1 permit 100.64.10.0 0.0.0.7 # This line will allow for the subnets to send and receive traffic. 
+  access-list 1 permit 100.64.10.0 0.0.0.7 # This line allows local traffic from either customer to be NATed using the CGNAT range. This will create a stateful connection which will allow for return traffic. To see stateful connectionse, use <code>show ip nat translations</code>.
 
   # Static routes for traffic
   ip route 192.168.10.0 255.255.255.0 100.64.10.1
@@ -153,3 +153,30 @@ The CGNAT gateway handles the inside and outside NAT configuration. The inside N
 
   exit
 </code></pre>
+
+### ISP Router Configuration
+Once the customer traffic has reached the CGNAT gateway, it is forwarded to the ISP router. This router allows customer traffic to route across the Internet to reach public-facing servers, as shown in this demo. 
+
+In this topology, the ISP router connects two directly attached networks:
+
+- The CGNAT-to-ISP link: 203.0.113.0/30
+
+- The public web server network: 198.51.100.0/30
+
+Since these two networks are directly connected, you do not need additional static route configurations. This section explains how traffic is handled once it leaves the CGNAT gateway:
+-  On the CGNAT gateway, traffic is forwarded to the public web server through the next-hop interface.
+  <pre><code>ip route 0.0.0.0 0.0.0.0 203.0.113.2</code></pre>
+- When it reaches the server, it will use that interface as its default gateway.
+- The ISP router does not utilize NAT because there is no need for a private-to-public IP translation. At this point traffic from the ISP router has a public IP address, so it is routable on the Internet. 
+
+### Public Web Server Configuration
+
+The public web server is assigned a routable IP address within the internet-facing subnet and uses the ISP router as its default gateway.
+
+IP address: 198.51.100.2
+
+Subnet mask: 255.255.255.252
+
+Default gateway: 198.51.100.1
+
+With this configuration in place, the server can respond to traffic originating from customer networks after it has been translated through CGNAT.
