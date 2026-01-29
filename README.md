@@ -180,3 +180,7 @@ Subnet mask: 255.255.255.252
 Default gateway: 198.51.100.1
 
 With this configuration in place, the server can respond to traffic originating from customer networks after it has been translated through CGNAT.
+
+
+## Verification
+
