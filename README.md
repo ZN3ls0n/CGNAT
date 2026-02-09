@@ -190,5 +190,7 @@ Use <code>show ip nat translations</code> to see active NAT translations.  If tr
 
 <img src="CGNATVerificationNAT.png">
 
+<img src="CustomerRouterNAT.png">
+
 
 
