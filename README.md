@@ -184,3 +184,5 @@ With this configuration in place, the server can respond to traffic originating 
 
 ## Verification
 
+<img src="CGNATVerificationNAT.png">
+
