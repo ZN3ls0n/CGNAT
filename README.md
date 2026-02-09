@@ -184,5 +184,8 @@ With this configuration in place, the server can respond to traffic originating 
 
 ## Verification
 
+To test connectivity, two devices within a customer network pinged a web server. To the CGNAT router, it does not identify which specific device sent traffic as the private IP addresses were NATted over the previous router. When it reached the CGNAT router, it saw traffic coming from the customer network 100.64.10.0/30. 
 <img src="CGNATVerificationNAT.png">
+
+
 
